@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Carbon Ledger — Demo Frontend</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Carbon Ledger — Hedera Demo</h1>
+      <p class="lead">Simple frontend to run demo and show logs.</p>
+    </header>
+
+    <main>
+      <section id="controls">
+        <div class="row">
+          <strong>Server status:</strong> <span id="serverStatus">Unknown</span>
+        </div>
+        <div class="row">
+          <button id="runDemo">Run Demo (server-side)</button>
+          <button id="createTopic">Create HCS Topic</button>
+          <button id="createToken">Create HTS Token</button>
+        </div>
+        <div class="row">
+          <label>Submit Emissions Report to Topic ID:</label>
+          <input id="reportTopicId" placeholder="topicId" />
+          <button id="submitReport">Submit Report</button>
+        </div>
+        <div class="row">
+          <label>Sell Token (tokenId):</label>
+          <input id="retireTokenId" placeholder="tokenId" />
+          <input id="retireAmount" placeholder="amount" type="number" />
+          <input id="buyerAccountId" placeholder="buyerAccountId (e.g. 0.0.x)" />
+          <button id="sellOffsetsBtn">Quick Sell (modal)</button>
+        </div>
+        <div class="row" id="sellStatusRow" style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <div>
+            <strong>Treasury balance:</strong>
+            <span id="treasuryBalance">-</span>
+            <span class="tokenSymbol">vCO2
+              <button class="infoIcon" type="button" aria-label="Verified Carbon Offset Token">ⓘ
+                <span class="infoTooltip">Verified Carbon Offset Token</span>
+              </button>
+            </span>
+          </div>
+          <div><strong>Last tx status:</strong> <span id="lastTxStatus">-</span></div>
+        </div>
+        <p class="hint">Note: The demo interacts with Hedera and must be run from the backend. Provide a `.env` with Testnet credentials for Hedera operations.</p>
+      </section>
+
+      <section id="logs">
+        <h2>Logs</h2>
+        <pre id="logArea">Open the server terminal and run: npm start
+Or serve this folder with: npx http-server public -p 8080
+</pre>
+      </section>
+
+      <section id="about">
+        <h2>About</h2>
+        <p>This small static UI is intended to be served with <code>npx http-server</code>. It doesn't directly talk to Hedera from the browser—run the demo using <code>npm start</code> in a separate terminal to execute Hedera operations.</p>
+      </section>
+    </main>
+
+    <footer>
+      <small>Carbon Ledger Demo • Hedera HCS & HTS</small>
+        <button id="aboutBtn" class="aboutBtn">About</button>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+  <!-- Confirmation modal -->
+  <div id="sellModal" class="modal">
+    <div class="panel">
+      <h3>Confirm Sell Offsets</h3>
+      <label for="modalTokenId">Token ID</label>
+      <input id="modalTokenId" placeholder="0.0.x" />
+      <label for="modalAmount">Amount</label>
+      <input id="modalAmount" placeholder="amount" type="number" />
+      <label for="modalBuyer">Buyer Account ID</label>
+      <input id="modalBuyer" placeholder="0.0.y" />
+      
+        <!-- Inline status message (success / error) -->
+        <div id="modalMessage" class="modalMessage" aria-live="polite"></div>
+      <div class="actions">
+        <button id="modalCancel">Cancel</button>
+          <button id="modalConfirm"><span id="modalSpinner" class="spinner" aria-hidden="true" style="display:none;margin-right:8px"></span>Confirm Sell</button>
+      </div>
+    </div>
+  </div>
+  
+    <!-- About modal -->
+    <div id="aboutModal" class="modal" aria-hidden="true">
+      <div class="panel">
+        <h3>About</h3>
+        <p>🌍 <strong>Carbon Ledger on Hedera</strong> —
+        A transparent registry for verified carbon emission certificates and offset tokens.
+        The platform issues and tracks vCO₂ tokens on Hedera Testnet,
+        allowing organizations to offset and trade carbon credits securely and sustainably.</p>
+        <div class="actions">
+          <button id="aboutClose">Close</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+/* public/style.css */
+
+:root{--bg:#0f1724;--card:#0b1220;--accent:#10b981;--muted:#9ca3af;color-scheme:dark}
+body{font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#031023 0%, #071426 100%);color:#e5eef8;margin:0;padding:32px}
+.container{max-width:900px;margin:0 auto;background:rgba(255,255,255,0.02);padding:24px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+header h1{margin:0 0 8px;font-size:1.6rem}
+.lead{margin:0;color:var(--muted)}
+#controls{margin:16px 0}
+button{background:var(--accent);border:0;padding:10px 16px;border-radius:8px;color:#042018;cursor:pointer;font-weight:600}
+#logs pre{white-space:pre-wrap;background:#001220;padding:12px;border-radius:8px;overflow:auto}
+.hint{color:var(--muted);font-size:0.9rem}
+footer{margin-top:18px;color:var(--muted);font-size:0.8rem;text-align:center}
+code{background:#021624;padding:2px 6px;border-radius:4px;color:#8be3c5}
+
+/* Modal styles for quick sell */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center}
+.modal .panel{background:#071426;padding:20px;border-radius:8px;max-width:420px;width:100%;color:#e5eef8}
+.modal label{display:block;margin-bottom:6px;font-weight:600}
+.modal input{width:100%;padding:8px;margin-bottom:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end}
+.modal .actions button{padding:8px 12px}
+
+.row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.row input{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+
+/* Modern button styles used in modal and controls */
+button{background:var(--accent);border:0;padding:10px 16px;border-radius:10px;color:#042018;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(16,185,129,0.12);transition:transform .12s ease,box-shadow .12s ease}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,185,129,0.16)}
+.modal .actions button{border-radius:8px;padding:8px 12px}
+.modal .panel{box-shadow:0 12px 40px rgba(2,6,23,0.6)}
+.modal{display:none;position:fixed;inset:0;align-items:center;justify-content:center}
+
+/* About button */
+.aboutBtn{margin-left:12px;background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:10px;color:inherit;cursor:pointer}
+.aboutBtn:hover{background:rgba(255,255,255,0.02)}
+
+/* Spinner & disabled state */
+#modalSpinner{display:inline-block}
+button:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none}
+.loading {opacity:0.8}
+
+/* Inline message in modal */
+.modalMessage{min-height:22px;margin:8px 0;padding:6px 8px;border-radius:6px;font-weight:600}
+.modalMessage.success{background:rgba(16,185,129,0.12);color:#10b981}
+.modalMessage.error{background:rgba(239,68,68,0.08);color:#ef4444}
+
+/* CSS spinner */
+.spinner{display:inline-block;width:16px;height:16px;border-radius:50%;border:3px solid rgba(255,255,255,0.12);border-top-color:var(--accent);animation:spin 800ms linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* modal message fade */
+.modalMessage{opacity:0;transform:translateY(-6px);transition:opacity .18s ease,transform .18s ease}
+.modalMessage.success,.modalMessage.error{opacity:1;transform:translateY(0)}
+
+/* token symbol and tooltip */
+.tokenSymbol{display:inline-flex;align-items:center;gap:8px;margin-left:8px;font-weight:700;color:#34d399;position:relative}
+.infoIcon{background:transparent;border:0;color:#bcdff1;font-weight:700;padding:4px 6px;border-radius:6px;cursor:pointer}
+.infoIcon:focus{outline:2px solid rgba(16,185,129,0.18)}
+.infoTooltip{display:none;position:absolute;left:0;top:28px;background:rgba(7,20,38,0.98);color:#e5eef8;padding:6px 8px;border-radius:6px;white-space:nowrap;font-size:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+.tokenSymbol:hover .infoTooltip,.infoIcon:focus + .infoTooltip{display:block}

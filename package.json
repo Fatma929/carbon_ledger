@@ -1,0 +1,18 @@
+{
+  "name": "carbon-ledger-hedera-hackathon",
+  "version": "1.0.0",
+  "description": "A transparent carbon accounting and offset platform using Hedera HCS and HTS.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node demo/run_full_demo.js",
+    "serve": "npx http-server public -p 8080",
+    "api": "node server.js"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.31.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
