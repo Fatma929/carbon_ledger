@@ -109,9 +109,4 @@ export async function sellCarbonOffsets(tokenId, amount, buyerAccountId, localCl
 
     return { status: receipt.status.toString(), treasuryBalance: availableAfter };
 }
-// Safe placeholder to avoid missing export errors
-export async function retireCarbonOffsets() {
-  console.log("RetireCarbonOffsets() placeholder called - logic can be added later.");
-  return { status: "placeholder", retired: 0 };
-}
 

@@ -1,7 +1,7 @@
 // demo/run_full_demo.js
 
 import { createEmissionsTopic, submitEmissionsReport } from '../src/hedera_services/hcs_tracker.js';
-import { createCarbonOffsetToken, retireCarbonOffsets } from '../src/hedera_services/hts_tokenization.js';
+import { createCarbonOffsetToken, sellCarbonOffsets } from '../src/hedera_services/hts_tokenization.js';
 
 async function runDemo() {
     console.log("==========================================");
@@ -27,7 +27,7 @@ async function runDemo() {
     // STEP 3: HTS - Create Offset Token
     const tokenId = await createCarbonOffsetToken();
 
-    // STEP 4: HTS - Retire Offsets (Solve Double Counting)
+    // STEP 4: HTS - sell Offsets (Solve Double Counting)
     console.log(`\n>>> Emissions Total: ${requiredOffsets} tCO2e. Retiring equal amount of vCO2 tokens...`);
     await retireCarbonOffsets(tokenId, requiredOffsets);
 
