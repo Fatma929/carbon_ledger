@@ -5,6 +5,8 @@ import {
     TokenSupplyType,
     TokenId,
     TransferTransaction,
+    TokenGrantKycTransaction,
+    TokenAssociateTransaction,
     AccountId,
     AccountBalanceQuery
 } from "@hashgraph/sdk";
@@ -18,7 +20,7 @@ export async function createCarbonOffsetToken() {
         .setTokenSymbol("vCO2")
         .setTokenType(TokenType.FungibleCommon)
         .setSupplyType(TokenSupplyType.Finite)
-    .setInitialSupply(1000000)
+        .setInitialSupply(1000000)
         .setMaxSupply(1000000000)
         .setDecimals(0)
         .setTreasuryAccountId(operatorId)
@@ -35,18 +37,16 @@ export async function createCarbonOffsetToken() {
     const tokenId = tokenCreateRx.tokenId;
 
     console.log(`- New Token ID (vCO2): ${tokenId.toString()}`);
-
     return tokenId.toString(); 
 }
 
-// New signature: accept client as argument for flexibility
 export async function sellCarbonOffsets(tokenId, amount, buyerAccountId, localClient = client) {
     console.log(`\n-- Selling ${amount} vCO2 Offsets from treasury to ${buyerAccountId}...`);
 
-    if (!tokenId) throw new Error('tokenId is required');
-    if (!buyerAccountId) throw new Error('buyerAccountId is required');
+    if (!tokenId) throw new Error("tokenId is required");
+    if (!buyerAccountId) throw new Error("buyerAccountId is required");
     const qty = Math.abs(Number(amount));
-    if (!Number.isFinite(qty) || qty <= 0) throw new Error('amount must be a positive number');
+    if (!Number.isFinite(qty) || qty <= 0) throw new Error("amount must be a positive number");
 
     const tokenToTransfer = TokenId.fromString(tokenId);
 
@@ -54,59 +54,74 @@ export async function sellCarbonOffsets(tokenId, amount, buyerAccountId, localCl
     let buyerId;
     try {
         buyerId = AccountId.fromString(buyerAccountId);
-    } catch (err) {
-        throw new Error('Invalid buyerAccountId format');
+    } catch {
+        throw new Error("Invalid buyerAccountId format");
     }
 
-    // Determine operator account id from env (explicit) and check balance
     const opAccount = AccountId.fromString(process.env.MY_ACCOUNT_ID);
+
+    // ✅ Step 1: Ensure token is associated with buyer
+    console.log(`- Associating token ${tokenId} with buyer account ${buyerAccountId}...`);
+    try {
+        const associateTx = await new TokenAssociateTransaction()
+            .setAccountId(buyerId)
+            .setTokenIds([tokenToTransfer])
+            .freezeWith(localClient)
+            .sign(operatorKey);
+
+        const associateSubmit = await associateTx.execute(localClient);
+        const associateReceipt = await associateSubmit.getReceipt(localClient);
+        console.log(`- Association status: ${associateReceipt.status.toString()}`);
+    } catch (err) {
+        if (err.message.includes("TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT")) {
+            console.log("- Token already associated with buyer, skipping.");
+        } else {
+            throw err;
+        }
+    }
+
+    // ✅ Step 2: Grant KYC to buyer
+    console.log(`- Granting KYC permission for ${buyerAccountId} on token ${tokenId}...`);
+    const grantKycTx = await new TokenGrantKycTransaction()
+        .setAccountId(buyerId)
+        .setTokenId(tokenToTransfer)
+        .freezeWith(localClient)
+        .sign(operatorKey);
+
+    const grantResponse = await grantKycTx.execute(localClient);
+    const grantReceipt = await grantResponse.getReceipt(localClient);
+    console.log(`- KYC grant status: ${grantReceipt.status.toString()}`);
+
+    // ✅ Step 3: Check treasury balance
     const balance = await new AccountBalanceQuery().setAccountId(opAccount).execute(localClient);
     const tokenKey = tokenToTransfer.toString();
-    let available = 0;
-    try {
-        if (balance.tokens instanceof Map) {
-            available = Number(balance.tokens.get(tokenKey) || 0);
-        } else if (balance.tokens && typeof balance.tokens._map !== 'undefined') {
-            available = Number(balance.tokens._map.get(tokenKey) || 0);
-        } else {
-            available = Number(balance.tokens[tokenKey] || 0);
-        }
-    } catch (err) {
-        available = 0;
-    }
+    const available = balance.tokens.get(tokenKey) ? Number(balance.tokens.get(tokenKey)) : 0;
 
     if (available < qty) {
-        throw new Error(`Insufficient treasury balance for token ${tokenKey}. Available: ${available}, requested: ${qty}`);
+        throw new Error(
+            `Insufficient treasury balance for token ${tokenKey}. Available: ${available}, requested: ${qty}`
+        );
     }
 
     console.log(`- Treasury balance OK. Available ${available}, transferring ${qty}...`);
 
+    // ✅ Step 4: Transfer tokens
     const transferTx = await new TransferTransaction()
         .addTokenTransfer(tokenToTransfer, opAccount, -qty)
         .addTokenTransfer(tokenToTransfer, buyerId, qty)
-        .freezeWith(localClient);
+        .freezeWith(localClient)
+        .sign(operatorKey);
 
     const signed = await transferTx.sign(operatorKey);
     const submitTx = await signed.execute(localClient);
     const receipt = await submitTx.getReceipt(localClient);
-
     console.log(`- Token transfer completed. Status: ${receipt.status.toString()}`);
 
-    // Query treasury balance again to return updated amount
+    // ✅ Step 5: Check updated treasury balance
     const balanceAfter = await new AccountBalanceQuery().setAccountId(opAccount).execute(localClient);
-    let availableAfter = 0;
-    try {
-        if (balanceAfter.tokens instanceof Map) {
-            availableAfter = Number(balanceAfter.tokens.get(tokenKey) || 0);
-        } else if (balanceAfter.tokens && typeof balanceAfter.tokens._map !== 'undefined') {
-            availableAfter = Number(balanceAfter.tokens._map.get(tokenKey) || 0);
-        } else {
-            availableAfter = Number(balanceAfter.tokens[tokenKey] || 0);
-        }
-    } catch (err) {
-        availableAfter = 0;
-    }
+    const availableAfter = balanceAfter.tokens.get(tokenKey)
+        ? Number(balanceAfter.tokens.get(tokenKey))
+        : 0;
 
     return { status: receipt.status.toString(), treasuryBalance: availableAfter };
 }
-
