@@ -1,12 +1,7 @@
-// server.js
-// Simple Express server to run the demo script and stream logs via Server-Sent Events (SSE)
-
 import express from 'express';
 import cors from 'cors';
 import { Client } from '@hashgraph/sdk';
 import dotenv from 'dotenv';
-// Load environment early
-dotenv.config();
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,14 +9,15 @@ import fs from 'fs';
 import { createEmissionsTopic, submitEmissionsReport } from './src/hedera_services/hcs_tracker.js';
 import { createCarbonOffsetToken, sellCarbonOffsets } from './src/hedera_services/hts_tokenization.js';
 
+dotenv.config();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Helper to mask secret values in logs
 function maskValue(v) {
   if (!v || typeof v !== 'string') return v;
   if (v.length <= 8) return '****';
-  return `${v.slice(0,6)}...${v.slice(-4)}`;
+  return `${v.slice(0, 6)}...${v.slice(-4)}`;
 }
 
 function maskEnvSecrets(s) {
@@ -34,21 +30,22 @@ function maskEnvSecrets(s) {
   return s;
 }
 
-// Configure Hedera client for server-side operations and validate env
 const client = Client.forName(process.env.HEDERA_NETWORK || 'testnet');
 const accountId = process.env.MY_ACCOUNT_ID;
-const privKey = process.env.MY_PRIVATE_KEY_DER || process.env.MY_PRIVATE_KEY_HEX || process.env.MY_PRIVATE_KEY;
+const privKey =
+  process.env.MY_PRIVATE_KEY_DER || process.env.MY_PRIVATE_KEY_HEX || process.env.MY_PRIVATE_KEY;
 
 if (!accountId || !privKey) {
-  console.error('FATAL: Missing required Hedera credentials. Please set MY_ACCOUNT_ID and either MY_PRIVATE_KEY_DER or MY_PRIVATE_KEY_HEX in your .env file.');
+  console.error(
+    'FATAL: Missing required Hedera credentials. Please set MY_ACCOUNT_ID and private key in .env'
+  );
   process.exit(1);
 }
 
 try {
   client.setOperator(accountId, privKey);
 } catch (e) {
-  console.error('FATAL: Failed to set operator on Hedera client. Check your MY_ACCOUNT_ID and private key format.');
-  // log masked details for debugging
+  console.error('FATAL: Failed to set operator on Hedera client. Check credentials.');
   console.error(`AccountId: ${maskValue(accountId)}  PrivateKey: ${maskValue(privKey)}`);
   process.exit(1);
 }
@@ -59,18 +56,18 @@ app.use(express.json());
 
 let clients = [];
 let lastLogs = [];
-let busy = false; // prevent concurrent demo/sell operations
+let busy = false;
 const logFile = path.join(__dirname, 'server.log');
 
 function appendToFile(line) {
-  try { fs.appendFileSync(logFile, line + '\n'); } catch (e) { /* ignore file errors */ }
+  try {
+    fs.appendFileSync(logFile, line + '\n');
+  } catch (e) {}
 }
 
 function sendEvent(data) {
   const payload = `data: ${JSON.stringify(data)}\n\n`;
-  for (const res of clients) {
-    res.write(payload);
-  }
+  for (const res of clients) res.write(payload);
 }
 
 app.get('/status', (req, res) => {
@@ -85,11 +82,7 @@ app.get('/events', (req, res) => {
   });
   res.flushHeaders();
 
-  // send existing logs
-  for (const line of lastLogs) {
-    res.write(`data: ${JSON.stringify(line)}\n\n`);
-  }
-
+  for (const line of lastLogs) res.write(`data: ${JSON.stringify(line)}\n\n`);
   clients.push(res);
 
   req.on('close', () => {
@@ -100,12 +93,9 @@ app.get('/events', (req, res) => {
 app.post('/run-demo', (req, res) => {
   if (busy) return res.status(409).json({ error: 'Server busy' });
   busy = true;
-  // spawn a node process to run the demo script
-  const demoPath = path.join(__dirname, 'demo', 'run_full_demo.js');
 
-  const child = spawn(process.execPath, [demoPath], {
-    env: process.env,
-  });
+  const demoPath = path.join(__dirname, 'demo', 'run_full_demo.js');
+  const child = spawn(process.execPath, [demoPath], { env: process.env });
 
   child.stdout.on('data', (chunk) => {
     const text = chunk.toString();
@@ -136,14 +126,13 @@ app.post('/run-demo', (req, res) => {
   res.json({ started: true });
 });
 
-// Create HCS topic
 app.post('/create-topic', async (req, res) => {
   try {
     const topicId = await createEmissionsTopic();
     const entry = { level: 'info', text: `Created HCS topic: ${topicId.toString()}` };
     lastLogs.push(entry);
     sendEvent(entry);
-  appendToFile(`[API] Created topic ${entry.text}`);
+    appendToFile(`[API] Created topic ${entry.text}`);
     res.json({ topicId: topicId.toString() });
   } catch (err) {
     const entry = { level: 'error', text: `Error creating topic: ${err.message || err}` };
@@ -153,7 +142,6 @@ app.post('/create-topic', async (req, res) => {
   }
 });
 
-// Submit emissions report to a topic
 app.post('/submit-report', async (req, res) => {
   const { topicId, report } = req.body;
   try {
@@ -161,7 +149,7 @@ app.post('/submit-report', async (req, res) => {
     const entry = { level: 'info', text: `Submitted report to ${topicId}. Consensus ts: ${ts}` };
     lastLogs.push(entry);
     sendEvent(entry);
-  appendToFile(`[API] Submitted report ${entry.text}`);
+    appendToFile(`[API] Submitted report ${entry.text}`);
     res.json({ consensusTimestamp: ts });
   } catch (err) {
     const entry = { level: 'error', text: `Error submitting report: ${err.message || err}` };
@@ -171,14 +159,13 @@ app.post('/submit-report', async (req, res) => {
   }
 });
 
-// Create HTS token
 app.post('/create-token', async (req, res) => {
   try {
     const tokenId = await createCarbonOffsetToken();
     const entry = { level: 'info', text: `Created token: ${tokenId}` };
     lastLogs.push(entry);
     sendEvent(entry);
-  appendToFile(`[API] Created token ${entry.text}`);
+    appendToFile(`[API] Created token ${entry.text}`);
     res.json({ tokenId });
   } catch (err) {
     const entry = { level: 'error', text: `Error creating token: ${err.message || err}` };
@@ -188,18 +175,21 @@ app.post('/create-token', async (req, res) => {
   }
 });
 
-// Sell (transfer) offsets to buyer
 app.post('/sell-offsets', async (req, res) => {
   if (busy) return res.status(409).json({ error: 'Server busy' });
   busy = true;
   const { tokenId, amount, buyerAccountId } = req.body;
   try {
     const result = await sellCarbonOffsets(tokenId, Number(amount), buyerAccountId, client);
-    // result: { status, treasuryBalance }
-    const entry = { level: 'info', text: `Sold ${amount} of token ${tokenId} to ${buyerAccountId}. Status: ${result.status}` };
+    const entry = {
+      level: 'info',
+      text: `Sold ${amount} of token ${tokenId} to ${buyerAccountId}. Status: ${result.status}`,
+    };
     lastLogs.push(entry);
     sendEvent(entry);
-    appendToFile(`[API] Sold ${amount} ${tokenId} -> ${buyerAccountId} (status: ${result.status})`);
+    appendToFile(
+      `[API] Sold ${amount} ${tokenId} -> ${buyerAccountId} (status: ${result.status})`
+    );
     res.json({ status: result.status, treasuryBalance: result.treasuryBalance });
   } catch (err) {
     const entry = { level: 'error', text: `Error selling offsets: ${err.message || err}` };
@@ -216,9 +206,8 @@ app.get('/logs', (req, res) => {
   res.json(lastLogs);
 });
 
-// Serve static frontend from public
 app.use('/', express.static(path.join(__dirname, 'public')));
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`API server listening on http://localhost:${port}`));
-console.log('Reminder: If you update .env, restart the server (Ctrl+C then npm run api) to pick up changes.');
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`API server listening on port ${PORT}`));
+console.log('Server ready. Restart required if .env is updated.');
