@@ -1,108 +1,55 @@
- #  Carbon Ledger: An Immutable Emissions and Offset Platform on Hedera
+# 🌍 Carbon Ledger — Hedera Hackathon Project
 
-##  Project Summary
-
-**Carbon Ledger** is a decentralized solution tackling the challenges of **transparency** and **double-counting** in the carbon offset market. We leverage **Hedera Hashgraph's** Distributed Ledger Technology (DLT) to provide an immutable audit trail for both emissions reporting and offset token retirement.
-
-**Core Hedera Services Used:**
-1. **Hedera Consensus Service (HCS):** For logging immutable emissions reports with cryptographically secure consensus timestamps.
-2. **Hedera Token Service (HTS):** For creating, minting, and permanently retiring (burning) carbon offset tokens to prevent fraudulent reuse (double-counting).
+A transparent carbon accounting and offset platform** powered by Hedera Hashgraph (HCS + HTS).  
+Track emissions, tokenize carbon offsets, and trade them securely on-chain.
 
 ---
 
-## 🛠️ Local Execution Guide (For Judges)
+# 🚀 Live Demo
 
-Follow these steps to run the **Carbon Ledger** demo on the Hedera **Testnet**.
+- Frontend: https://carbon-ledger-ten.vercel.app  
+- Backend:(Hosted on Railway – coming soon)*
 
-### Prerequisites
+---
 
-* **Node.js** (v18 or newer)
-* **Git**
-* **Hedera Testnet Account** (Account ID and Private Key are required).
+# 🧠 Project Overview
 
-### Step 1: Setup and Dependencies
+Carbon Ledger enables transparent and auditable carbon tracking using Hedera Consensus Service (HCS) and Hedera Token Service (HTS).  
+It allows organizations to:
+- Record verified carbon emission reports on HCS  
+- Mint and manage carbon offset tokens via HTS  
+- Sell offsets directly through an integrated API  
+- Visualize the process in real time via a live dashboard
 
-1. **Clone/Download Repository** (Already done).
-2. **Setup Environment:** Create a file named **`.env`** in the root directory and populate it with your actual Testnet credentials (Account ID and Private Key).
-3. **Install Libraries:** Open the project's Terminal (in VS Code) and run the install command:
-    ```bash
-    npm install
-    ```
+---
 
-### Step 2: Run the Full Demo
+##🧩 Architecture
 
-The primary script executes a full lifecycle demonstration:
-1. Creates a new HCS Topic.
-2. Submits an immutable Emissions Report to the Topic.
-3. Creates a new HTS Fungible Token (VCO2).
-4. **Retires (Burns) a specific amount of VCO2 tokens** matching the reported emissions, thus preventing double-counting.
+| Layer | Technology | Description |
+|-------|-------------|-------------|
+| *Backend* | Node.js + Express | REST API to interact with Hedera HCS/HTS |
+| *Frontend*| Static (served from `/public`) | User interface and visualization |
+|  | Hedera Hashgraph | Distributed ledger for auditability |
+| *Integration* | Server-Sent Events (SSE) | Real-time streaming of process logs |
 
-**Execute the command in your Terminal:**
+---
 
+## 🛠 Local Setup
+
+# 1️⃣ Clone the repository
 ```bash
-npm start
+git clone https://github.com/Fatma929/carbon_ledger.git
+cd carbon_ledger
+2️⃣env 
+ MY_ACCOUNT_ID=0.0.YOUR_ACCOUNT_ID
+MY_PRIVATE_KEY_DER=YOUR_PRIVATE_KEY
+HEDERA_NETWORK=testnet
+PORT=4000
 
-
----
-
-## Serve & Frontend
-
-A simple static frontend has been added under the `public/` folder. It can be served locally with `http-server` so you can open the UI in your browser while running the demo in a separate terminal.
-
-1. Install http-server globally or use npx (no install required):
-
-```powershell
-npx http-server public -p 8080
-```
-
-2. Open http://localhost:8080 in your browser to view the UI.
-
-Note: The frontend is static and does not directly execute Hedera transactions from the browser. Run `npm start` in another terminal to execute the Hedera demo.
-
-## API Server & Live Logs
-
-A minimal Express API server is provided to run the demo script from the server and stream logs to the browser using Server-Sent Events (SSE). This enables a two-terminal workflow where the browser shows live demo output.
-
-1. Install new dependencies (express, cors):
-
-```powershell
+3️⃣Install dependencies
 npm install
-```
+then open your  browser 
 
-2. Start the API server (this serves the frontend and the API):
+http://localhost:4000
 
-```powershell
-npm run api
-```
-
-3. Open http://localhost:3000 in your browser. Click "Run Demo" to start the demo on the server. Logs will stream into the page.
-
-Notes:
-- The API server spawns the existing `demo/run_full_demo.js` Node script. Ensure your `.env` file with Hedera credentials is present if you want the demo to perform real Hedera operations.
-- If you prefer to serve the frontend separately (http-server), you can still run `npm start` in another terminal and `npm run api` just for the API endpoints.
-
-Important: if you change `.env` (for example to add `HEDERA_PORTAL_TOKEN`), you must restart the API server for changes to take effect:
-
-- Stop the running server (Ctrl+C in the terminal where `npm run api` is running).
-- Start it again: `npm run api`
-
-
-## Smoke test and Sell Offsets
-
-Quick smoke test (PowerShell) to ensure the API server is responding:
-
-```powershell
-.\scripts\smoke_test.ps1
-```
-
-Sell offsets via the UI or API:
-
-- UI: open http://localhost:3000, fill tokenId, amount and buyerAccountId, click Sell.
-- API: POST to `/sell-offsets` with JSON body:
-
-```json
-{ "tokenId": "0.0.x", "amount": 100, "buyerAccountId": "0.0.y" }
-```
-
-The server will validate treasury balance and return a status indicating success or an error message.
-
+Method Endpoint Description GET /status Check if the server is up GET /events Stream real-time logs (SSE) GET /logs Retrieve last known logs POST /create-topic Create new Hedera HCS topic POST /submit-report Submit a carbon emission report POST /create-token Create a carbon offset token (HTS) POST /sell-offsets Sell or transfer offsets to another account
