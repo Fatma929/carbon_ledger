@@ -7,9 +7,8 @@ Track emissions, tokenize carbon offsets, and trade them securely on-chain.
 
 # 🚀 Live Demo
 
-- Frontend: https://carbon-ledger-ten.vercel.app  
-- Backend:(Hosted on Railway – coming soon)*
-
+ https://carbon-ledger-ten.vercel.app  
+ 
 ---
 
 # 🧠 Project Overview
