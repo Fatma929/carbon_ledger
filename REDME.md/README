@@ -1,54 +1,82 @@
 # 🌍 Carbon Ledger — Hedera Hackathon Project
-
-A transparent carbon accounting and offset platform** powered by Hedera Hashgraph (HCS + HTS).  
-Track emissions, tokenize carbon offsets, and trade them securely on-chain.
+A transparent carbon accounting and offset platform powered by **Hedera Hashgraph (HCS + HTS)**. Track emissions, tokenize carbon offsets, and trade them securely on-chain.
 
 ---
 
-# 🚀 Live Demo
+## 🚀 Live Demo
+🔗 https://carbon-ledger-ten.vercel.app  
+🎬 Watch project demo video → [https://youtu.be/0KyzUaYAn0U?si=CJIil44LMPNX4dbx)  
 
- https://carbon-ledger-ten.vercel.app  
- 
+
 ---
 
-# 🧠 Project Overview
-
+## 🧠 Project Overview
 Carbon Ledger enables transparent and auditable carbon tracking using Hedera Consensus Service (HCS) and Hedera Token Service (HTS).  
-It allows organizations to:
+It allows organizations to:  
 - Record verified carbon emission reports on HCS  
 - Mint and manage carbon offset tokens via HTS  
 - Sell offsets directly through an integrated API  
-- Visualize the process in real time via a live dashboard
+- Visualize the process in real time through a live dashboard  
+This project was built as part of the **Hedera Global Hackathon 2025**, focusing on sustainability, traceability, and blockchain-driven environmental accountability.
 
 ---
 
-##🧩 Architecture
+## 🧩 Architecture
+**Backend:** Node.js and Express – REST API interacting with Hedera HCS and HTS  
+**Frontend:** Static web dashboard (from `/public`) for data visualization  
+**Ledger:** Hedera Hashgraph for distributed, tamper-proof recording  
+**Integration:** Server-Sent Events (SSE) for real-time logs and updates  
 
-| Layer | Technology | Description |
-|-------|-------------|-------------|
-| *Backend* | Node.js + Express | REST API to interact with Hedera HCS/HTS |
-| *Frontend*| Static (served from `/public`) | User interface and visualization |
-|  | Hedera Hashgraph | Distributed ledger for auditability |
-| *Integration* | Server-Sent Events (SSE) | Real-time streaming of process logs |
+---
+
+## 📖 Features
+- 🌿 Track verified carbon emissions transparently  
+- 🔗 Tokenize carbon offsets using Hedera Token Service  
+- 💰 Trade offsets securely between participants  
+- 📊 Visualize live transactions on a dashboard  
+- ♻️ Promote sustainable, auditable climate action  
 
 ---
 
 ## 🛠 Local Setup
-
-# 1️⃣ Clone the repository
+**1️⃣ Clone the repository* 
 ```bash
 git clone https://github.com/Fatma929/carbon_ledger.git
 cd carbon_ledger
-2️⃣env 
- MY_ACCOUNT_ID=0.0.YOUR_ACCOUNT_ID
+2️⃣ Create .env file in the root directory
+
+MY_ACCOUNT_ID=0.0.YOUR_ACCOUNT_ID
 MY_PRIVATE_KEY_DER=YOUR_PRIVATE_KEY
 HEDERA_NETWORK=testnet
 PORT=4000
+3️⃣ Install dependencies
+npm start
 
-3️⃣Install dependencies
-npm install
-then open your  browser 
+Then open your browser and visit:
+👉 http://localhost:4000
 
-http://localhost:4000
+API Endpoints Overview 
 
-Method Endpoint Description GET /status Check if the server is up GET /events Stream real-time logs (SSE) GET /logs Retrieve last known logs POST /create-topic Create new Hedera HCS topic POST /submit-report Submit a carbon emission report POST /create-token Create a carbon offset token (HTS) POST /sell-offsets Sell or transfer offsets to another account
+GET /status – Check if the server is running
+GET /events – Stream real-time logs (SSE)
+GET /logs – Retrieve last known logs
+POST /create-topic – Create new Hedera HCS topic
+POST /submit-report – Submit a carbon emission report
+POST /create-token – Create a carbon offset token (HTS)
+POST /sell-offsets – Sell or transfer offsets between accounts
+
+🌱 Why Carbon Ledger? 
+
+Traditional carbon markets are often opaque and fragmented.
+Carbon Ledger introduces transparency and automation by recording all actions on Hedera Hashgraph — making carbon offsets auditable, traceable, and trustworthy.
+Our mission is to enable organizations to verify and offset their emissions efficiently, supporting a greener planet through open and reliable t
+
+👩‍💻 Team 
+
+Developed by Fatma Elzahraa, Sustainability Researcher and recipient of the UNESCO Global Youth Impact Award for Environmental and Climate Action, for the Hedera Hackathon 2025
+
+License 
+
+This project is licensed under the MIT License.
+You are free to fork, modify, and build upon it while crediting the original source
+
